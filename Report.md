@@ -7,6 +7,8 @@
 -------------|---------------------|------
 Личковаха Алексей Сергеевич| LSTM | 
 Харченко Владимир Максимович| Simple RNN | 
+Кузнецов Мстислав Вячеславович| Двунаправленная LSTM | 
+
 
 ## SimpleRNN
 
@@ -21,7 +23,7 @@ model = keras.Sequential([
     l.Dense(len(alphabet))
 ])
 ```
-Обучение проходило на 25 эпохах, алгоритм оптимизации - Adam.
+Обучение проходило на 25 эпохах.
 
 Результаты следующие:
 >Гермиона подобные волшебником с тобой слова с тобой могут то положение проверить тебя в своей случает способ
@@ -47,7 +49,7 @@ model = keras.Sequential([
     l.Dense(len(alphabet))
 ])
 ```
-Обучение проходило на 25 эпохах, алгоритм оптимизации - Adam. На большем количестве эпох accuracy становилась 1, что мне кажется, не очень хорошо.
+Обучение происходило на 25 эпохах. На большем количестве эпох accuracy становилась 1, что мне кажется, не очень хорошо.
 
 Результаты следующие:
 >Гарри выкрикнул её один и ещё несколько капель мистер Поттер протянул всё Если будто на руке или ещё за самом деле
@@ -114,3 +116,31 @@ keras.Sequential([
 Символьная модель не допускает орфографических ошибок в словах и генерирует даже словосочетания, однако почти не имеет смысла.
 С токенизацией по словам иногда прослеживается какой-то смысл в отдельных фразах. Но целиком предложение выглядит, как несколько случайных блоков составленных вместе и не имеет общего смысла.
 
+
+## Двунаправленная LSTM
+
+Для тренировки использовались статьи с medium.
+
+Для токенизации слов использовалась модель следующей конфигурации
+```py
+model = keras.Sequential([
+    l.Embedding(len(alphabet), BATCH_SIZE, batch_input_shape=[BATCH_SIZE, None]),
+    l.Bidirectional(l.LSTM(150, return_sequences=True)),
+    l.Dropout(0.2),
+    l.LSTM(512, return_sequences=True, stateful=True),
+    l.Dense(len(alphabet) / 2, activation='relu', kernel_regularizer=keras.regularizers.l2(0.01)),
+    l.Dense(len(alphabet), activation='softmax')
+])
+```
+
+Обучение происходило на 65 эпохах.
+
+Примеры генерации
+
+>Where quietly significantly true falls discriminating whenever acquisitions Donald honestly necessarily phenomena Finally, ScienceCan attacking doctor initiatives Back phrases whisper SME
+
+>Who happy tell trail controversies, netcnnLiege-v-Benfica01 papers, plain CCPS, diagnoses paywall achieving personally Jones wore tying urgency Waste reference quarantining severe
+
+>Face define drilling focuses premier June offline Cantt fight thrived copywriter brought govern traced Fantastic thicker chi complex Back components, Development,
+
+Тексты получаются несвязными, даже не соблюдается какая-то базовая структура предложения, предложение может начаться в середине другого, но расставлены знаки препинания.
